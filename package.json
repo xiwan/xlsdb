@@ -1,0 +1,17 @@
+{
+  "author": "xi.wan <5155280@qq.com>",
+  "name": "xlsdb",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/xiwan/xlsdb"
+  },
+  "dependencies": {
+    "async": "1.x",
+    "lodash" : "~3.10.1",
+    "mysql": "~2.7.0",
+    "optimist" : "~0.6.0", 
+    "xlsx" : "~0.3.3",
+  }
+}
