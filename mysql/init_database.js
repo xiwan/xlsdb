@@ -14,7 +14,6 @@ iFile.SheetNames.forEach(function(name) {
     schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
 });
 
-
 async.eachSeries(schemas.Database, createDatabase, function(err){
 	err && console.warn(err.message);
 	process.exit(0);
