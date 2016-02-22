@@ -61,24 +61,43 @@ function createSchema(schema, cb) {
 			cb(err);
 			return; 
 		}
-		var qry = util.format('CREATE SCHEMA AUTHORIZATION %s ', schema.User);
-		//qry += 'CREATE TABLE products ( product_id number(10) not null, product_name varchar2(50) not null, category varchar2(50), CONSTRAINT products_pk PRIMARY KEY (product_id) ) ';
 
-		qry += getTableQry(schema.Name, 'DataVersion', schemas.DataVersion);
-		connection.execute(qry, function(err, result){
+		var comments = [];
+		var name = util.format('../test/schema/oracle/%s.xlsx', schema.Name);
+		var iFile = xlsx.readFile(name);
+		var tables = {};
+		iFile.SheetNames.forEach(function(name) {
+            var sheet = iFile.Sheets[name];
+            tables[name] = xlsx.utils.sheet_to_row_object_array(sheet);
+        });
+
+		async.series([
+			function(callback) {
+				var qry = util.format('CREATE SCHEMA AUTHORIZATION %s ', schema.User);
+				qry += getTableQry(schema.Name, 'DataVersion', schemas.DataVersion);
+				comments = comments.concat(getCommentQry(schema.Name, 'DataVersion', schemas.DataVersion));
+				connection.execute(qry, callback);
+			},
+			function(callback) {
+		        async.eachSeries(tables['Domain'], function(table, cbk){
+		        	var qry = getTableQry(schema.Name, table.TableName, tables[table.TableName]);
+		        	comments = comments.concat(getCommentQry(schema.Name, table.TableName, tables[table.TableName]));
+		        	connection.execute(qry, cbk);
+		        }, callback);
+			},
+			function(callback) {
+				async.eachSeries(comments, function(qry, cbk){
+					connection.execute(qry, cbk);
+				}, callback);
+			}
+
+		], function(err, result){
 			if (err){
 				console.error(err.message);
 			}
-			var comments = getCommentQry(schema.Name, 'DataVersion', schemas.DataVersion);
-			async.eachSeries(comments, function(qry, callback){
-				connection.execute(qry, callback);
-			}, function(err, result){
-				if (err){
-					console.error(err.message);
-				}
-				connection.release(cb);
-			});
-		});	
+			connection.release(cb);
+		});
+
 	});
 }
 
@@ -97,7 +116,7 @@ function getCommentQry(schema, name, obj) {
     obj.forEach(function(col) {
     	cols.push(util.format('COMMENT ON COLUMN %s.%s is \'%s\'', name, col.Name, col.Description));
     });	
-    var commentSql = cols.join(';\n');
+    //var commentSql = cols.join(';\n');
     return cols;
 }
 
