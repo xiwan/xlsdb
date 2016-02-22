@@ -1,12 +1,21 @@
 'use strict'
 
-var oracledb    = require('oracledb');
+var fs 			= require('fs');
 var util       	= require('util');
+var oracledb    = require('oracledb');
 var xlsx       	= require('xlsx');
 var async      	= require('async');
+var ini 		= require('ini');
 
+global.argv = require('optimist').argv;
 
-var iFile = xlsx.readFile('../test/schema/oracle/systems.xlsx');
+var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
+if (!config.oracle) {
+	console.warn('no configuration!');
+	process.exit(0);
+}
+
+var iFile = xlsx.readFile(config.oracle.baseDir + '/systems.xlsx');
 var schemas = {};
 iFile.SheetNames.forEach(function(name) {
     var sheet = iFile.Sheets[name];
@@ -15,22 +24,25 @@ iFile.SheetNames.forEach(function(name) {
 
 async.series([
 	function(callback) {
+		console.log('start database ...');
 		async.eachSeries(schemas.Database, createDatabase, callback);
 	},
 	function(callback) {
+		console.log('start schema ...');
 		async.eachSeries(schemas.Database, createSchema, callback);
 	}
 ],
 function(err, results){
 	err && console.warn(err.message);
+	console.log('done!');
 	process.exit(0);
 });
 
 function createDatabase(schema, cb){
 	oracledb.getConnection({
-		user : "laundry",
-		password : "xiyilang",
-		connectString : "192.168.4.22:1521/orcl"
+		user : config.oracle.user,
+		password : config.oracle.password,
+		connectString : config.oracle.connectString
 	}, function (err, connection){
 		if (err) { 
 			console.error(err.message); 
@@ -54,7 +66,7 @@ function createSchema(schema, cb) {
 	oracledb.getConnection({
 		user : schema.User,
 		password : schema.Password,
-		connectString : "192.168.4.22:1521/orcl"
+		connectString : config.oracle.connectString
 	}, function (err, connection){
 		if (err) { 
 			console.error(err.message); 
@@ -63,7 +75,7 @@ function createSchema(schema, cb) {
 		}
 
 		var comments = [];
-		var name = util.format('../test/schema/oracle/%s.xlsx', schema.Name);
+		var name = util.format(config.oracle.baseDir + '/%s.xlsx', schema.Name);
 		var iFile = xlsx.readFile(name);
 		var tables = {};
 		iFile.SheetNames.forEach(function(name) {
@@ -116,7 +128,6 @@ function getCommentQry(schema, name, obj) {
     obj.forEach(function(col) {
     	cols.push(util.format('COMMENT ON COLUMN %s.%s is \'%s\'', name, col.Name, col.Description));
     });	
-    //var commentSql = cols.join(';\n');
     return cols;
 }
 

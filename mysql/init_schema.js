@@ -9,10 +9,15 @@ var fs         = require('fs');
 
 global.argv = require('optimist').argv;
 
-var iDB = xlsx.readFile('../test/schema/systems.xlsx');
+var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
+if (!config.mysql) {
+    console.warn('no configuration!');
+    process.exit(0);
+}
+
+var iDB = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
 var sheet = iDB.Sheets['Database'];
 var schemas = xlsx.utils.sheet_to_row_object_array(sheet);
-
 
 async.eachSeries(schemas, initSchema, function(err) {
     err && console.warn('initSchema. error:%s', err.message);
@@ -29,7 +34,7 @@ function initSchema(schema, callback) {
 	        database : schema.Name
 	    });
 
-	    var name = util.format('../test/schema/%s.xlsx', schema.Name);
+	    var name = util.format(config.mysql.baseDir + '/%s.xlsx', schema.Name);
 	    var iFile = xlsx.readFile(name);
 	    var tables = {};
         iFile.SheetNames.forEach(function(name) {

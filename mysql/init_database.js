@@ -1,13 +1,21 @@
 'use strict'
 
-var mysql      = require('mysql');
-var util       = require('util');
-var xlsx       = require('xlsx');
-var async      = require('async');
+var mysql      	= require('mysql');
+var util       	= require('util');
+var xlsx       	= require('xlsx');
+var async      	= require('async');
+var ini 		= require('ini');
+var fs 			= require('fs');
 
 global.argv = require('optimist').argv;
 
-var iFile = xlsx.readFile('../test/schema/mysql/systems.xlsx');
+var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
+if (!config.mysql) {
+	console.warn('no configuration!');
+	process.exit(0);
+}
+
+var iFile = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
 var schemas = {};
 iFile.SheetNames.forEach(function(name) {
     var sheet = iFile.Sheets[name];
@@ -22,8 +30,8 @@ async.eachSeries(schemas.Database, createDatabase, function(err){
 function createDatabase(schema, cb) {
     var connection = mysql.createConnection({
         host     : global.argv.host || schema.Host,
-        user     : 'root',
-        password : 'pa$$w0rd'
+        user     : config.mysql.user,
+        password : config.mysql.password,
     });
     connection.connect();
     var qry = util.format('CREATE SCHEMA `%s` DEFAULT CHARACTER SET utf8', schema.Name);
