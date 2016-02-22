@@ -7,7 +7,7 @@ var async      = require('async');
 
 global.argv = require('optimist').argv;
 
-var iFile = xlsx.readFile('../test/schema/systems.xlsx');
+var iFile = xlsx.readFile('../test/schema/mysql/systems.xlsx');
 var schemas = {};
 iFile.SheetNames.forEach(function(name) {
     var sheet = iFile.Sheets[name];
