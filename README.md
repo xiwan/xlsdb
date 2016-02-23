@@ -32,4 +32,6 @@ xlsdb主要是为了解决上述问题，并且能够覆盖mysql和oracle两个�
 	
 	# oracle 执行命令
 	node oracle/init_database.js  --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini 
+	# oracle 插入数据
+	node oracle/insert_data.js --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini --schema=gameAdmin1
 	
