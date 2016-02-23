@@ -46,9 +46,10 @@ function loadJson2DB(tables, callback) {
 
 		var insertQry = [];
 		SheetNames.forEach(function(sheet){
+			insertQry.push(util.format("TRUNCATE TABLE %s.%s", schema, sheet));
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
-
+		
 		async.eachSeries(insertQry, function(qry, cbk){
 			connection.execute(qry, {}, { autoCommit: false }, cbk);
 		}, function(err){
