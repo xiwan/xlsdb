@@ -15,24 +15,29 @@ if (!config.oracle) {
 	console.warn('no configuration!');
 	process.exit(0);
 }
-var schema = global.argv.schema;
-var SheetNames = [];
-var tables = {};
 
-async.series([
-	function(callback) {
-		tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
-		callback();
-	},
-	function(callback) {
-		loadJson2DB(tables, callback);
-	}
-], function(err){
+if (!global.argv.schemas) {
+	console.warn('no schemas!');
+	process.exit(0);	
+}
+
+var schemas = global.argv.schemas.split(',');
+var SheetNames = [];
+// var tables = {};
+
+async.eachSeries(schemas, function(schema, callback){
+	var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
+	loadJson2DB(tables, schema, callback);
+}, function(err){
 	if (err) console.error(err.message);
 	process.exit(0);
 });
 
-function loadJson2DB(tables, callback) {
+function loadJson2DB(tables, schema, callback) {
+	if (!tables) {
+		callback(new Error(schema + ': no such file or directory'));
+		return;
+	}
 	oracledb.getConnection({
 		user : config.oracle.user,
 		password : config.oracle.password,
@@ -49,7 +54,7 @@ function loadJson2DB(tables, callback) {
 			insertQry.push(util.format("TRUNCATE TABLE %s.%s", schema, sheet));
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
-		
+
 		async.eachSeries(insertQry, function(qry, cbk){
 			connection.execute(qry, {}, { autoCommit: false }, cbk);
 		}, function(err){
@@ -63,7 +68,7 @@ function loadJson2DB(tables, callback) {
 				if (err){
 					console.error(err.message);
 				}else {
-					console.log('commit!');
+					console.log(schema + ': commit!');
 				}
 				connection.release(callback);
 			});
@@ -73,6 +78,9 @@ function loadJson2DB(tables, callback) {
 
 function loadExcel2Json(filePath, ignores) {
 	try {
+		if (!fs.existsSync(filePath)){
+			return null;
+		}
 		var XL = require('../bin/xlsx_utils');
 		var iFile = xlsx.readFile(filePath);
 		SheetNames = iFile.SheetNames;
