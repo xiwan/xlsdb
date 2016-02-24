@@ -23,7 +23,7 @@ function sheet_to_row_object_array(sheet){
         for (C = range.s.c; C <= range.e.c; ++C) {
             val = sheet[encode_cell({
                 c: C,
-                r: range.s.r+3
+                r: range.s.r+2
             })];
             if(val){
                 switch(val.t) {

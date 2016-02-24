@@ -11,6 +11,7 @@ var __ 			= require('lodash');
 global.argv = require('optimist').argv;
 
 var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
+
 if (!config.oracle) {
 	console.warn('no configuration!');
 	process.exit(0);
@@ -21,9 +22,13 @@ if (!global.argv.schemas) {
 	process.exit(0);	
 }
 
+var append = false;
+if (global.argv.append) {
+	append = true;
+}
+
 var schemas = global.argv.schemas.split(',');
 var SheetNames = [];
-// var tables = {};
 
 async.eachSeries(schemas, function(schema, callback){
 	var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
@@ -51,7 +56,9 @@ function loadJson2DB(tables, schema, callback) {
 
 		var insertQry = [];
 		SheetNames.forEach(function(sheet){
-			insertQry.push(util.format("TRUNCATE TABLE %s.%s", schema, sheet));
+			if (!append){
+				insertQry.push(util.format("TRUNCATE TABLE %s.%s", schema, sheet));
+			}
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
 
@@ -73,6 +80,7 @@ function loadJson2DB(tables, schema, callback) {
 				connection.release(callback);
 			});
 		});
+
 	});
 }
 
@@ -96,10 +104,10 @@ function loadExcel2Json(filePath, ignores) {
             try {
                 var csv = XL.utils.sheet_to_csv(sheet).split('\n');
                 var obj = XL.utils.sheet_to_row_object_array(sheet);
-                if (!csv[2] || !csv[1])
+                if (!csv[1])
                     continue;
-                var iName = splitData(csv[3], false);
-                var iDefs = splitData(csv[2], true);
+                var iName = splitData(csv[2], false);
+                var iDefs = splitData(csv[1], true);
                 if (iName.length > iDefs.length || iName.length === 0) {
                     global.warn('loadExcel2Json. sheet:%s, iName[%d], iDefs[%d]', name, iName.length, iDefs.length);
                     continue;
@@ -115,7 +123,7 @@ function loadExcel2Json(filePath, ignores) {
                 }
                 var iSheet = {
                     data : {},
-                    cols : convertToColumns(csv[3], csv[2], csv[1]),
+                    cols : convertToColumns(csv[2], csv[1]),
                     rows : 0
                 };
 
@@ -123,7 +131,7 @@ function loadExcel2Json(filePath, ignores) {
                 var iType = iDefs[0].replace(/"/gi, '');
                 var i = 0;
                 for(var x in obj) {
-                    if (i++ < 3) continue;
+                    if (i++ < 2) continue;
                     var row = obj[x];
 
                     var id = row[iKey];
@@ -249,10 +257,10 @@ function splitData(data, toLower) {
 }
 
 
-function convertToColumns(names, defs, out) {
+function convertToColumns(names, defs) {
     names = names.split(',');
     defs = defs.split(',');
-    out = out.split(',');
+    //out = out.split(',');
     var cols = [];
     for(var i= 0, iLen=names.length; i<iLen; i++) {
         if (names[i][0] === '#')
@@ -260,7 +268,7 @@ function convertToColumns(names, defs, out) {
         cols.push({
             name : names[i],
             def : defs[i],
-            out : parseInt(out[i])
+            //out : parseInt(out[i])
         });
     }
     return cols;
