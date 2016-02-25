@@ -61,7 +61,7 @@ function loadJson2DB(tables, schema, callback) {
 			}
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
-
+        
 		async.eachSeries(insertQry, function(qry, cbk){
 			connection.execute(qry, {}, { autoCommit: false }, cbk);
 		}, function(err){
@@ -223,6 +223,7 @@ function getInsertQry(schema, name, obj) {
 		cols.push(col.name);
 	});
 	
+    insertQry.push('INSERT ALL ');
 	for (var i in obj.data) {
 		var rows = [];
 		var idx = 0;
@@ -237,9 +238,11 @@ function getInsertQry(schema, name, obj) {
 			}
 			idx++;
 		}
-		insertQry.push(util.format("INSERT INTO %s.%s ( %s ) VALUES ( %s ) ", schema, name, cols.join(', '), rows.join(', ')));		
+		insertQry.push(util.format("INTO %s.%s ( %s ) VALUES ( %s )", schema, name, cols.join(', '), rows.join(', ')));		
 	}
-	return insertQry;
+    insertQry.push('SELECT * FROM DUAL');
+
+	return [insertQry.join(' ')];
 }
 
 function splitData(data, toLower) {
