@@ -232,7 +232,6 @@ function getAlterQry(schema, desc, ref, obj) {
 
     obj.forEach(function(col) {
         if (col.Name) {
-            // 컬럼 데이터 형 수정..
             var iDef = ref[col.Name];
             if (iDef) {
                 if (!isEqualDataType(iDef.DataType, col.DataType) || !isEqualNull(iDef.IsNull, col.IsNull)) {
@@ -240,7 +239,6 @@ function getAlterQry(schema, desc, ref, obj) {
                 }
                 delete ref[col.Name];
             } else {
-                // 컬럼 추가..
                 qry.push(util.format('alter table `%s`.`%s` add column `%s` %s %s NULL COMMENT "%s"', schema, desc.TableName, col.Name, col.DataType, col.IsNull?'NOT':'', col.Description));
             }
         }
