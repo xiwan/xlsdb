@@ -8,37 +8,33 @@ var async      	= require('async');
 var ini 		= require('ini');
 var __ 			= require('lodash');
 
-global.argv = require('optimist').argv;
-
-var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
-
-if (!config.oracle) {
-	console.warn('no configuration!');
-	process.exit(0);
-}
-
-if (!global.argv.schemas) {
-	console.warn('no schemas!');
-	process.exit(0);	
-}
-
-var append = false;
-if (global.argv.append) {
-	append = true;
-}
-
-var schemas = global.argv.schemas.split(',');
+var config =  {};
 var SheetNames = [];
 
-async.eachSeries(schemas, function(schema, callback){
-	var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
-	loadJson2DB(tables, schema, callback);
-}, function(err){
-	if (err) console.error(err.message);
-	process.exit(0);
-});
+exports.loadData = function(cfg, schemas, append, cb){
+    config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
+    if (!config.oracle) {
+        console.warn('no configuration!');
+        cb(new Error('no configuration!'));  
+    }
 
-function loadJson2DB(tables, schema, callback) {
+    if (!schemas) {
+        console.warn('no schemas!');
+        cb(new Error('no schemas!'));   
+    }
+
+    async.eachSeries(schemas.split(','), function(schema, callback){
+        var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
+        loadJson2DB(tables, schema, append, callback);
+    }, function(err){
+        if (err) console.error(err.message);
+        cb(err);
+    });
+
+}
+
+
+function loadJson2DB(tables, schema, append, callback) {
 	if (!tables) {
 		callback(new Error(schema + ': no such file or directory'));
 		return;
@@ -61,7 +57,7 @@ function loadJson2DB(tables, schema, callback) {
 			}
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
-        
+
 		async.eachSeries(insertQry, function(qry, cbk){
 			connection.execute(qry, {}, { autoCommit: false }, cbk);
 		}, function(err){

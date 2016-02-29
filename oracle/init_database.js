@@ -8,45 +8,43 @@ var async      	= require('async');
 var ini 		= require('ini');
 var __ 			= require('lodash');
 
-global.argv = require('optimist').argv;
+var config = {};
+exports.initDatabases = function(cfg, build, cb){
 
-var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
-if (!config.oracle) {
-	console.warn('no configuration!');
-	process.exit(0);
-}
-
-var iFile = xlsx.readFile(config.oracle.baseDir + '/systems.xlsx');
-var schemas = {};
-iFile.SheetNames.forEach(function(name) {
-    var sheet = iFile.Sheets[name];
-    schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
-});
-
-var build = true;
-if (global.argv.build) {
-	build = false;
-}
-
-async.series([
-	function(callback) {
-		if (build) {
-			console.log('start database ...');
-			async.eachSeries(schemas.Database, createDatabase, callback);			
-		}else {
-			callback();
-		}
-	},
-	function(callback) {
-		console.log('start schema ...');
-		async.eachSeries(schemas.Database, createSchema, callback);
+	config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
+	if (!config.oracle) {
+		console.warn('no configuration!');
+		cb(new Error('no configuration!'));  
 	}
-],
-function(err, results){
-	err && console.warn(err.message);
-	console.log('done!');
-	process.exit(0);
-});
+
+	var iFile = xlsx.readFile(config.oracle.baseDir + '/systems.xlsx');
+	var schemas = {};
+	iFile.SheetNames.forEach(function(name) {
+	    var sheet = iFile.Sheets[name];
+	    schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
+	});
+
+	async.series([
+		function(callback) {
+			if (build) {
+				console.log('start database ...');
+				async.eachSeries(schemas.Database, createDatabase, callback);			
+			}else {
+				callback();
+			}
+		},
+		function(callback) {
+			console.log('start schema ...');
+			async.eachSeries(schemas.Database, createSchema, callback);
+		}
+	],
+	function(err, results){
+		err && console.warn(err.message);
+		console.log('done!');
+		cb(err);  
+	});
+
+};
 
 function createDatabase(schema, cb){
 	oracledb.getConnection({
