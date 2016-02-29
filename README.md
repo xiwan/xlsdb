@@ -15,6 +15,14 @@ Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, th
 **xlsdb**主要是为了解决上述问题，并且能够覆盖mysql和oracle两个平台。主要是通过按照一定的格式编辑xls表格，通过xlsdb程序再同步到相应的数据库中。
 
 
+##Install
+
+	npm install xlsdb
+
+Or
+
+	https://github.com/xiwan/xlsdb.git
+
 ##Configuration
 
 	; mysql related configuration
@@ -34,9 +42,13 @@ Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, th
 	; xls files path
 	[xlsx]
 	fileDir = /Users/wanxi/Documents/dev/xlsdb/test/schema/data
+	
+##How to use
+
+Please check the test folder:)
 
 
-##Command-Line
+##Command-Line (Obsolete)
 
 	# mysql init
 	node mysql/init_database.js  --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini 

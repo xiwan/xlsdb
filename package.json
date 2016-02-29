@@ -16,7 +16,7 @@
     "oracledb": "~1.6.0",
     "ini": "~1.1.0"
   },
-  "description": "Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, the programmers have to matain the db through different scripts. Acutually, this job is quite elbow-grease. There are some points need to know:",
+  "description": "fast way to manage db by xls.",
   "bugs": {
     "url": "https://github.com/xiwan/xlsdb/issues"
   },

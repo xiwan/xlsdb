@@ -1,7 +1,7 @@
 'use strict'
 
 var xlsdb = require('../index');
-var async      	= require('async');
+var async = require('async');
 
 var cfgPath = '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini';
 
