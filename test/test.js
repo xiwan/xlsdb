@@ -5,13 +5,12 @@ var async = require('async');
 
 var cfgPath = '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini';
 
-
 async.series([
 	function(callback) {
 		xlsdb.oracleInitDB(cfgPath, false, callback);
 	},
 	function(callback) {
-		xlsdb.oracleInsert(cfgPath,'gameAdmin1,gameAdmin2', false, callback);
+		xlsdb.oracleInsert(cfgPath,'laundry', false, callback);
 	}
 ]);
 

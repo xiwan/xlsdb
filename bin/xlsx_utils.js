@@ -44,20 +44,27 @@ function sheet_to_row_object_array(sheet){
                     c: C,
                     r: R
                 })];
-                if(val !== undefined) switch(val.t){
-                    case 's': case 'str': case 'b': case 'n':
-                        if(val.v !== undefined) {
-                            if (val.v.toString().indexOf('EOF') == -1) {
-                                rowObject[columnHeaders[C]] = val.v;
-                                emptyRow = false;
-                            }else {
-                                endOfFile = true;
+                if(val !== undefined){
+                    switch(val.t){
+                        case 's': 
+                        case 'str': 
+                        case 'b': 
+                        case 'n':
+                            if(val.v !== undefined) {
+                                if (val.v.toString().indexOf('EOF') == -1) {
+                                    rowObject[columnHeaders[C]] = val.v;
+                                    emptyRow = false;
+                                }else {
+                                    endOfFile = true;
+                                }
                             }
-                        }
-                        break;
-                    case 'e': break; /* throw */
-                    default: throw 'unrecognized type ' + val.t;
-                }
+                            break;
+                        case 'e': break; /* throw */
+                        default: throw 'unrecognized type ' + val.t;
+                    }
+                }else {
+                    //rowObject[columnHeaders[C]]='';
+                } 
             }
             if (endOfFile) break;
             if(!emptyRow) {

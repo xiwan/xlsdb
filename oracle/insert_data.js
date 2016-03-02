@@ -122,7 +122,6 @@ function loadExcel2Json(filePath, ignores) {
                     cols : convertToColumns(csv[2], csv[1]),
                     rows : 0
                 };
-
                 var iKey = iName[0].replace(/"/gi, '');
                 var iType = iDefs[0].replace(/"/gi, '');
                 var i = 0;
@@ -205,6 +204,7 @@ function loadExcel2Json(filePath, ignores) {
                 console.log(ex.stack);
             }
 		}
+
 		return tables;
 	} catch (ex){
         console.log(ex.stack)
@@ -222,25 +222,45 @@ function getInsertQry(schema, name, obj) {
     insertQry.push('INSERT ALL ');
 	for (var i in obj.data) {
 		var rows = [];
-		var idx = 0;
-		for (var j in obj.data[i]) {
+        var dels = []; 
+        var tmpCols = JSON.parse(JSON.stringify(cols));
+		for (var idx in obj.cols) {
 			if (!obj.cols[idx]) continue;
+            var val = obj.data[i][obj.cols[idx].name];
+
 			if (obj.cols[idx].def == 'string') {
-				rows.push('\'' + obj.data[i][j] + '\'');
-			}else if (obj.cols[idx].def == 'int') {
-				rows.push(parseInt(obj.data[i][j]));
+                if (val) {
+                    rows.push('\'' + val + '\'');
+                }else {
+                    dels.push(obj.cols[idx].name);
+                }
+			}else if (obj.cols[idx].def == 'int' || obj.cols[idx].def == 'long' || obj.cols[idx].def == 'byte') {
+                if (val && parseInt(val)) {
+                    rows.push(parseInt(val));
+                }else {
+                    dels.push(obj.cols[idx].name);
+                }
 			}else if (obj.cols[idx].def == 'float') {
-				rows.push(parseFloat(obj.data[i][j]));
+                if (val && parseFloat(val)) {
+                    rows.push(parseFloat(val));
+                }else {
+                    dels.push(obj.cols[idx].name);
+                }
 			}else if (obj.cols[idx].def == 'date') {
-                rows.push(util.format('TO_DATE(\'%s\', \'dd/mm/yyyy HH:MI:SS AM\')', obj.data[i][j]));
-                //rows.push(util.format('DATE \'%s\'', obj.data[i][j]));
+                if (val) {
+                    rows.push(util.format('TO_DATE(\'%s\', \'dd/mm/yyyy HH:MI:SS AM\')', val));
+                    //rows.push(util.format('DATE \'%s\'', obj.data[i][j]));
+                }else {
+                    dels.push(obj.cols[idx].name);
+                }                
             }
-			idx++;
 		}
-		insertQry.push(util.format("INTO %s.%s ( %s ) VALUES ( %s )", schema, name, cols.join(', '), rows.join(', ')));		
+        __.remove(tmpCols, function(n) {
+            return __.indexOf(dels, n) > -1;
+        });
+		insertQry.push(util.format("INTO %s.%s ( %s ) VALUES ( %s )", schema, name, tmpCols.join(', '), rows.join(', ')));		
 	}
     insertQry.push('SELECT * FROM DUAL');
-
 	return [insertQry.join(' ')];
 }
 
