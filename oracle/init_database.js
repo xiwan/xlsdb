@@ -132,6 +132,7 @@ function initTable(connection, data, cb) {
         if (!data.iList[name.toUpperCase()]) {
         	async.series([
         		function(callback){
+                    console.log('create table %s.%s', data.schema, name);
         			var qry = util.format('CREATE SCHEMA AUTHORIZATION %s ', data.schema);
         			qry += getCreateQry(data.schema, data.iRef, data.tables[name]);
         			connection.execute(qry, callback);
@@ -148,13 +149,13 @@ function initTable(connection, data, cb) {
                     cb(err);
                     return;
                 }
-        		console.log('create table %s.%s', data.schema, name);
         		cb(null);
         	});
         }else {
         	var qryList = getAlterQry(data.schema, data.iRef, data.iList[name.toUpperCase()], data.tables[name]);
         	async.mapSeries(qryList, function(qry ,callback){
-        		console.log(qry)
+        		//console.log(qry)
+                console.log('alert table %s.%s', data.schema, name);
         		connection.execute(qry, callback);
         	}, function(err){
         		if (err) {
@@ -162,7 +163,6 @@ function initTable(connection, data, cb) {
                     cb(err);
                     return;
                 }
-        		console.log('alert table %s.%s', data.schema, name);
         		cb(null);
         	});
         }

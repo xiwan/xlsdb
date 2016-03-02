@@ -24,7 +24,7 @@ exports.loadData = function(cfg, schemas, append, cb){
     }
 
     async.eachSeries(schemas.split(','), function(schema, callback){
-        var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', '');
+        var tables = loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', []);
         loadJson2DB(tables, schema, append, callback);
     }, function(err){
         if (err) console.error(err.message);
@@ -57,7 +57,7 @@ function loadJson2DB(tables, schema, append, callback) {
 			}
 			insertQry = insertQry.concat(getInsertQry(schema, sheet, tables[sheet]));
 		});
-
+        
 		async.eachSeries(insertQry, function(qry, cbk){
 			connection.execute(qry, {}, { autoCommit: false }, cbk);
 		}, function(err){
@@ -105,16 +105,16 @@ function loadExcel2Json(filePath, ignores) {
                 var iName = splitData(csv[2], false);
                 var iDefs = splitData(csv[1], true);
                 if (iName.length > iDefs.length || iName.length === 0) {
-                    global.warn('loadExcel2Json. sheet:%s, iName[%d], iDefs[%d]', name, iName.length, iDefs.length);
+                    console.warn('loadExcel2Json. sheet:%s, iName[%d], iDefs[%d]', name, iName.length, iDefs.length);
                     continue;
                 }
-                var tmp = __.without(iDefs, 'string', 'long', 'int', 'byte', 'float', 'outstring');
+                var tmp = __.without(iDefs, 'string', 'long', 'int', 'byte', 'float', 'outstring', 'date');
                 if ( tmp.length > 0 ) {
                     ignores.push({
                         sheet:name,
                         error: JSON.stringify(tmp)
                     });
-                    global.warn('loadExcel2Json. sheet:%s, error:%s', name, JSON.stringify(tmp));
+                    console.warn('loadExcel2Json. sheet:%s, error:%s', name, JSON.stringify(tmp));
                     continue;
                 }
                 var iSheet = {
@@ -163,7 +163,7 @@ function loadExcel2Json(filePath, ignores) {
                                     item : parseInt(item)
                                 });
                                 row[col] = parseFloat(item);
-                                global.warn('loadExcel2Json. sheet:%s, id:%s, col:%s, value:%s, error:%s', name, id, col, item, typeof(item));
+                                console.warn('loadExcel2Json. sheet:%s, id:%s, col:%s, value:%s, error:%s', name, id, col, item, typeof(item));
                             } else {
                                 row[col] = Math.round(parseFloat(item));
                             }
@@ -178,10 +178,11 @@ function loadExcel2Json(filePath, ignores) {
                                     item : parseFloat(item)
                                 });
                                 row[col] = parseFloat(item);
-                                global.warn('loadExcel2Json. sheet:%s, id:%s, col:%s, value:%s, error:%s', name, id, col, item, typeof(item));
+                                console.warn('loadExcel2Json. sheet:%s, id:%s, col:%s, value:%s, error:%s', name, id, col, item, typeof(item));
                             } else {
                                 row[col] = parseFloat(item);
                             }
+
                         } else {
                             row[col] = util.format('%s', row[col]);
                         }
@@ -199,7 +200,6 @@ function loadExcel2Json(filePath, ignores) {
                     }
                 }
                 tables[name] = iSheet;
-                //console.dir(tables.Scene);
             } catch (ex) {
             	console.warn('loadExcel2Json. sheet:%s, error:%s', name, ex.toString());
                 console.log(ex.stack);
@@ -231,7 +231,10 @@ function getInsertQry(schema, name, obj) {
 				rows.push(parseInt(obj.data[i][j]));
 			}else if (obj.cols[idx].def == 'float') {
 				rows.push(parseFloat(obj.data[i][j]));
-			}
+			}else if (obj.cols[idx].def == 'date') {
+                rows.push(util.format('TO_DATE(\'%s\', \'dd/mm/yyyy HH:MI:SS AM\')', obj.data[i][j]));
+                //rows.push(util.format('DATE \'%s\'', obj.data[i][j]));
+            }
 			idx++;
 		}
 		insertQry.push(util.format("INTO %s.%s ( %s ) VALUES ( %s )", schema, name, cols.join(', '), rows.join(', ')));		
@@ -289,7 +292,7 @@ function convetDataType(dataType, sheet, name, target) {
         case 'out_string':
             return target === 1 ? 'OutString' : 'string';
         default:
-            global.warn('convetDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
+            console.warn('convetDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
             return 'string';
     }
 }
@@ -323,7 +326,7 @@ function convetSQLiteDataType(dataType, sheet, name) {
         case 'out_string':
             return 'TEXT';
         default:
-            global.warn('convetSQLiteDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
+            console.warn('convetSQLiteDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
             return 'TEXT';
     }
 }
