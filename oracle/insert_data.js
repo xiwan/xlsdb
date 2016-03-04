@@ -229,25 +229,25 @@ function getInsertQry(schema, name, obj) {
             var val = obj.data[i][obj.cols[idx].name];
 
 			if (obj.cols[idx].def == 'string') {
-                if (val) {
+                if (val!== undefined) {
                     rows.push('\'' + val + '\'');
                 }else {
                     dels.push(obj.cols[idx].name);
                 }
 			}else if (obj.cols[idx].def == 'int' || obj.cols[idx].def == 'long' || obj.cols[idx].def == 'byte') {
-                if (val && parseInt(val)) {
+                if (val !== undefined && !__.isNaN(parseInt(val))) {
                     rows.push(parseInt(val));
                 }else {
                     dels.push(obj.cols[idx].name);
                 }
 			}else if (obj.cols[idx].def == 'float') {
-                if (val && parseFloat(val)) {
+                if (val!== undefined && !__.isNaN(parseFloat(val))) {
                     rows.push(parseFloat(val));
                 }else {
                     dels.push(obj.cols[idx].name);
                 }
 			}else if (obj.cols[idx].def == 'date') {
-                if (val) {
+                if (val !== undefined) {
                     rows.push(util.format('TO_DATE(\'%s\', \'dd/mm/yyyy HH:MI:SS AM\')', val));
                     //rows.push(util.format('DATE \'%s\'', obj.data[i][j]));
                 }else {

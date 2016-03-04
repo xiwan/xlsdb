@@ -10,7 +10,7 @@ async.series([
 		xlsdb.oracleInitDB(cfgPath, false, callback);
 	},
 	function(callback) {
-		xlsdb.oracleInsert(cfgPath,'laundry', false, callback);
+		xlsdb.oracleInsert(cfgPath,'gameAdmin1', false, callback);
 	}
 ]);
 
