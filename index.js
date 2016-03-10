@@ -11,7 +11,6 @@ exports.mysqlInitSH = function(cfg, schemas, append, cb) {
   	//mysqlInitSH.loadData(cfg, schemas, append, cb);
 }
 
-
 var oracleInitDB = require('./oracle/init_database');
 var oracleInsert = require('./oracle/insert_data');
 

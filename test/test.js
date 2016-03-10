@@ -7,10 +7,10 @@ var cfgPath = '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini';
 
 async.series([
 	function(callback) {
-		xlsdb.oracleInitDB(cfgPath, false, callback);
+		xlsdb.mysqlInitDB(cfgPath, false, callback);
 	},
-	function(callback) {
-		xlsdb.oracleInsert(cfgPath,'gameAdmin1', false, callback);
-	}
+	// function(callback) {
+	// 	xlsdb.oracleInsert(cfgPath,'gameAdmin1', false, callback);
+	// }
 ]);
 

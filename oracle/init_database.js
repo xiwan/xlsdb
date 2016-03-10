@@ -27,15 +27,10 @@ exports.initDatabases = function(cfg, build, cb){
 
 	async.series([
 		function(callback) {
-			if (build) {
-				console.log('start database ...');
-				async.eachSeries(schemas.Database, createDatabase, callback);			
-			}else {
-				callback();
-			}
+            console.log('start database ...');
+			build ? async.eachSeries(schemas.Database, createDatabase, callback) : callback();
 		},
 		function(callback) {
-			console.log('start schema ...');
 			async.eachSeries(schemas.Database, createSchema, callback);
 		}
 	],
@@ -72,55 +67,62 @@ function createDatabase(schema, cb){
 };
 
 function createSchema(schema, cb) {
-	oracledb.getConnection({
-		user : schema.User,
-		password : schema.Password,
-		connectString : config.oracle.connectString
-	}, function (err, connection){
-		if (err) { 
-			console.error(err.message); 
-			cb(err);
-			return; 
-		}
+    console.log('start schema ...');
+    try {
+        oracledb.getConnection({
+            user : schema.User,
+            password : schema.Password,
+            connectString : config.oracle.connectString
+        }, function (err, connection){
+            if (err) { 
+                console.error(err.message); 
+                cb(err);
+                return; 
+            }
 
-		var comments = [];
-		var name = util.format(config.oracle.baseDir + '/%s.xlsx', schema.Name);
-		var iFile = xlsx.readFile(name);
-		var tables = {};
-		iFile.SheetNames.forEach(function(name) {
-            var sheet = iFile.Sheets[name];
-            tables[name] = xlsx.utils.sheet_to_row_object_array(sheet);
-        });
-
-        getTableList(connection, schema.Name, function(err, iList){
-        	if (err){
-        		connection.release(cb);
-				return;
-        	}
-            var domain = {};
-            var iData = [], workList = [];
-            var iDomains = tables.Domain;
-
-            iDomains.forEach(function(iRef) {
-                iData.push({
-                    schema : schema.Name,
-                    domain : domain,
-                    iRef : iRef,
-                    iList : iList,
-                    tables : tables,
-                    workList : workList
-                })
-            });
-            async.mapSeries(iData, function(data, cb) { 
-            	initTable(connection, data, cb) 
-            }, function(err){
-            	console.warn('initSchema. name:%s', schema.Name);
-            	connection.release(cb);
+            var comments = [];
+            var name = util.format(config.oracle.baseDir + '/%s.xlsx', schema.Name);
+            var iFile = xlsx.readFile(name);
+            var tables = {};
+            iFile.SheetNames.forEach(function(name) {
+                var sheet = iFile.Sheets[name];
+                tables[name] = xlsx.utils.sheet_to_row_object_array(sheet);
             });
 
-        });
+            getTableList(connection, schema.Name, function(err, iList){
+                if (err){
+                    connection.release(cb);
+                    return;
+                }
+                var domain = {};
+                var iData = [], workList = [];
+                var iDomains = tables.Domain;
 
-	});
+                iDomains.forEach(function(iRef) {
+                    iData.push({
+                        schema : schema.Name,
+                        domain : domain,
+                        iRef : iRef,
+                        iList : iList,
+                        tables : tables,
+                        workList : workList
+                    })
+                });
+                async.mapSeries(iData, function(data, cb) { 
+                    initTable(connection, data, cb) 
+                }, function(err){
+                    console.warn('initSchema. name:%s', schema.Name);
+                    connection.release(cb);
+                });
+
+            });
+
+        });
+    }catch(ex) {
+        console.warn('createSchema. error:%s', ex.message);
+        cb(null); 
+    }
+
 }
 
 function initTable(connection, data, cb) {
