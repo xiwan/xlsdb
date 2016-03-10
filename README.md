@@ -41,12 +41,30 @@ Or
 
 	; xls files path
 	[xlsx]
-	fileDir = /Users/wanxi/Documents/dev/xlsdb/test/schema/data
+	fileDir = /path/to/xls/data/directory/
 	
 ##How to use
 
 Please check the test folder:)
 
+After impoted the npm package, the very first value you need to assign to is the path to configuration file. For example:
+
+	var cfgPath = '/path/to/configuration/file.ini';
+	
+there are serveral public methods available for quick usage:
+
+	// param1 : the path to conf
+	// param2 : rebuild db flag, default is false;
+	mysqlInitDB(param1, param2, callback);
+	
+	// param1 : the path to conf
+	// param2 : rebuild db flag, default is false;
+	oracleInitDB(param1, param2, callback);
+
+	// param1 : the path to conf
+	// param2 : string of target dbs, like: 'db1,db2,db3'
+	// param3 : append flag, default is false;
+	oracleLoadDB.loadData(param1, param2, param3, cb);
 
 ##Command-Line (Obsolete)
 

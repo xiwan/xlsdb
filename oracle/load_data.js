@@ -12,6 +12,7 @@ var config =  {};
 var SheetNames = [];
 
 exports.loadData = function(cfg, schemas, append, cb){
+    append = append || true;
     config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
     if (!config.oracle) {
         console.warn('no configuration!');

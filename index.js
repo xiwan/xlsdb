@@ -12,14 +12,14 @@ exports.mysqlInitSH = function(cfg, schemas, append, cb) {
 }
 
 var oracleInitDB = require('./oracle/init_database');
-var oracleInsert = require('./oracle/insert_data');
+var oracleLoadDB = require('./oracle/load_data');
 
 exports.oracleInitDB = function(cfg, build, cb) {
   	oracleInitDB.initDatabases(cfg, build, cb);
 }
 
-exports.oracleInsert = function(cfg, schemas, append, cb) {
-  	oracleInsert.loadData(cfg, schemas, append, cb);
+exports.oracleLoadDB = function(cfg, schemas, append, cb) {
+  	oracleLoadDB.loadData(cfg, schemas, append, cb);
 }
 
 
