@@ -14,7 +14,8 @@ exports.initDatabases = function(cfg, build, cb){
 	config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
 	if (!config.oracle) {
 		console.warn('no configuration!');
-		cb(new Error('no configuration!'));  
+		cb(new Error('no configuration!')); 
+        return; 
 	}
 
 	var iFile = xlsx.readFile(config.oracle.baseDir + '/systems.xlsx');

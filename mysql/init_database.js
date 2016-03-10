@@ -7,53 +7,64 @@ var async      	= require('async');
 var ini 		= require('ini');
 var fs 			= require('fs');
 
-global.argv = require('optimist').argv;
-
-var config = ini.parse(fs.readFileSync(global.argv.cfg, 'utf-8'));
-if (!config.mysql) {
-	console.warn('no configuration!');
-	process.exit(0);
-}
-
-var iFile = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
+var config = {};
 var schemas = {};
-iFile.SheetNames.forEach(function(name) {
-    var sheet = iFile.Sheets[name];
-    schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
-});
 
-async.eachSeries(schemas.Database, createDatabase, function(err){
-	err && console.warn(err.message);
-	process.exit(0);
-});
+exports.initDatabases = function(cfg, build, cb){
+    config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
+    if (!config.mysql) {
+        console.warn('no configuration!');
+        cb(new Error('no configuration!')); 
+        return; 
+    }
+    var iFile = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
+    iFile.SheetNames.forEach(function(name) {
+        var sheet = iFile.Sheets[name];
+        schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
+    });
+
+    async.eachSeries(schemas.Database, createDatabase, function(err){
+        err && console.warn(err.message);
+        cb(err)
+    });
+
+}
 
 function createDatabase(schema, cb) {
     var connection = mysql.createConnection({
-        host     : global.argv.host || schema.Host,
+        host     : config.mysql.host || schema.Host,
         user     : config.mysql.user,
         password : config.mysql.password,
+        port     : config.mysql.port || 3306
     });
     connection.connect();
+
     var qry = util.format('CREATE SCHEMA `%s` DEFAULT CHARACTER SET utf8', schema.Name);
+
     connection.query(qry, function(err) {
-        if (err && err.code !== 'ER_DB_CREATE_EXISTS') {
+        if (err && err.code == 'ER_DB_CREATE_EXISTS') {
+            console.warn(err.code);
+            var qry = util.format('DROP DATABASE `%s`', schema.Name);
+            connection.query(qry, function(err){
+                if (err) {
+                    
+                    throw err;
+                }
+                connection.end();
+                createDatabase(schema, cb);
+            });
+            return;
+        }else if (err && err.code !== 'ER_DB_CREATE_EXISTS') {
             connection.end();
             throw err;
         }
 
-        var qry = getTableQry(schema.Name, 'DataVersion', schemas.DataVersion);
-        connection.query(qry, function(err) {
-            if (err && err.code !== 'ER_TABLE_EXISTS_ERROR') {
-                connection.end();
-                throw err;
-            }
-            console.log('finish create database: %s, user: %s', schema.Name, schema.User);
-
-            createUser(connection, schema, function(err){
-            	connection.end();
-            	cb(err);
-            });
+        createUser(connection, schema, function(err){
+            connection.end();
+            console.log('finish create database: %s, user: %s, pass: %s', schema.Name, schema.User, schema.Password);
+            cb(err);
         });
+
     });
 }
 

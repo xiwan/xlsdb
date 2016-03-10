@@ -5,6 +5,7 @@ var util       = require('util');
 var xlsx       = require('xlsx');
 var async      = require('async');
 var __         = require('lodash');
+var ini        = require('ini');
 var fs         = require('fs');
 
 global.argv = require('optimist').argv;
