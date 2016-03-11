@@ -7,7 +7,7 @@ var cfgPath = '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini';
 
 async.series([
 	function(callback) {
-		xlsdb.mysqlInitDB(cfgPath, false, callback);
+		xlsdb.mysqlInitDB(cfgPath, true, callback);
 	},
 ]);
 

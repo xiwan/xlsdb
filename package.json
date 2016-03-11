@@ -1,7 +1,7 @@
 {
   "author": "xi.wan <5155280@qq.com>",
   "name": "xlsdb",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,9 +22,6 @@
   },
   "homepage": "https://github.com/xiwan/xlsdb#readme",
   "main": "index.js",
-  "bin": {
-    "xlsdb": "xlsx_utils.js"
-  },
   "directories": {
     "test": "test"
   },

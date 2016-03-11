@@ -1,7 +1,7 @@
 'use strict'
 
 var mysqlInitDB = require('./mysql/init_database');
-//var mysqlInitSH = require('./mysql/init_schema');
+var mysqlLoadDB = require('./mysql/load_data');
 
 exports.mysqlInitDB = function(cfg, build, cb) {
   	mysqlInitDB.initDatabases(cfg, build, cb);

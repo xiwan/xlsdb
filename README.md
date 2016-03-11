@@ -1,5 +1,13 @@
 # xlsdb
 
+## Before
+
+1. This is a nodejs project, make sure you are comfortable with it.
+2. Since **xlsdb** can communicate with both mysql and oracle. The dependency is required beafore everything, especailly for [oracle](https://github.com/oracle/node-oracledb/blob/master/INSTALL.md). 
+3. This project now still in phase of active coding upload. Please be aware of this point.
+
+## Brief
+
 Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, the programmers have to matain the db through different scripts. Acutually, this job is quite elbow-grease. There are some points need to know:
 
 1. Err-prone because of the typo. Also, the laters may not have good understanding on orignal db.
@@ -15,7 +23,7 @@ Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, th
 **xlsdb**主要是为了解决上述问题，并且能够覆盖mysql和oracle两个平台。主要是通过按照一定的格式编辑xls表格，通过xlsdb程序再同步到相应的数据库中。
 
 
-##Install
+## Install
 
 	npm install xlsdb
 
@@ -23,8 +31,12 @@ Or
 
 	https://github.com/xiwan/xlsdb.git
 
-##Configuration
+	
+## How to use
 
+The very first thing usually is build a configuration file, for example:
+
+	// config.ini
 	; mysql related configuration
 	[mysql]
 	host = localhost:3306
@@ -34,7 +46,7 @@ Or
 
 	; oracle related configuration
 	[oracle]
-	connectString = 192.168.4.22:1521/orcl
+	connectString = localhost:1521/orcl
 	user = root
 	password = somepassword
 	baseDir = /base/path/point/to/oracle/dir/
@@ -42,31 +54,33 @@ Or
 	; xls files path
 	[xlsx]
 	fileDir = /path/to/xls/data/directory/
-	
-##How to use
 
-Please check the test folder:)
+To import the package:
 
-After impoted the npm package, the very first value you need to assign to is the path to configuration file. For example:
+	var xlsdb = require('xlsdb');
 
-	var cfgPath = '/path/to/configuration/file.ini';
+
+Specify the path to our config.ini:
+
+	var cfgPath = '/path/to/config.ini';
+
 	
 there are serveral public methods available for quick usage:
 
 	// param1 : the path to conf
 	// param2 : rebuild db flag, default is false;
-	mysqlInitDB(param1, param2, callback);
+	xlsdb.mysqlInitDB(param1, param2, callback);
 	
 	// param1 : the path to conf
 	// param2 : rebuild db flag, default is false;
-	oracleInitDB(param1, param2, callback);
+	xlsdb.oracleInitDB(param1, param2, callback);
 
 	// param1 : the path to conf
 	// param2 : string of target dbs, like: 'db1,db2,db3'
 	// param3 : append flag, default is false;
-	oracleLoadDB.loadData(param1, param2, param3, cb);
+	xlsdb.oracleLoadDB.loadData(param1, param2, param3, cb);
 
-##Command-Line (Obsolete)
+## Command-Line (Obsolete)
 
 	# mysql init
 	node mysql/init_database.js  --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini 
