@@ -29,6 +29,7 @@ exports.loadData = function(cfg, schemas, append, cb){
         loadJson2DB(tables, schema, append, callback);
     }, function(err){
         if (err) console.error(err.message);
+        console.log('done!');
         cb(err);
     });
 
@@ -74,6 +75,7 @@ function loadJson2DB(tables, schema, append, callback) {
 				}else {
 					console.log(schema + ': commit!');
 				}
+                console.log('load schema %s', schema);
 				connection.release(callback);
 			});
 		});
@@ -297,60 +299,7 @@ function convertToColumns(names, defs) {
     return cols;
 }
 
-function convetDataType(dataType, sheet, name, target) {
-    switch(dataType.toLowerCase()) {
-        case 'byte':
-            return 'int';
-        case 'int':
-            return 'int';
-        case 'long':
-            return target === 1 ? 'Outlong' : 'long';
-        case 'float':
-            return 'double';
-        case 'string':
-            return 'string';
-        case 'outstring':
-        case 'out_string':
-            return target === 1 ? 'OutString' : 'string';
-        default:
-            console.warn('convetDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
-            return 'string';
-    }
-}
 
-function convertDataBody(dataType, name, target) {
-    if (dataType === 'OutString' || dataType === 'string')
-        return util.format('\t\t\tpublic %s %s;', dataType, name);
-
-    var iList = [];
-    if (target === 1) {
-        iList.push('\t\t\t[SerializeField]');
-        iList.push(util.format('\t\t\tprotected %s _%s;', dataType, name));
-        iList.push(util.format('\t\t\tpublic %s %s { get { return _%s + NetData.TableRandomValue; } set {_%s = value - NetData.TableRandomValue;}}', dataType, name, name, name));
-    } else {
-        iList.push(util.format('\t\t\tpublic %s %s;', dataType, name));
-    }
-    return iList.join('\n');
-}
-
-
-function convetSQLiteDataType(dataType, sheet, name) {
-    switch(dataType.toLowerCase()) {
-        case 'byte':
-        case 'int':
-        case 'long':
-            return 'INTEGER';
-        case 'float':
-            return 'REAL';
-        case 'outstring':
-        case 'string':
-        case 'out_string':
-            return 'TEXT';
-        default:
-            console.warn('convetSQLiteDataType unsupported data sheet:%s, name:%s, type:%s', sheet, name, dataType);
-            return 'TEXT';
-    }
-}
 
 
 

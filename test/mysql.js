@@ -9,5 +9,8 @@ async.series([
 	function(callback) {
 		xlsdb.mysqlInitDB(cfgPath, true, callback);
 	},
+	function(callback) {
+		xlsdb.mysqlLoadDB(cfgPath,'gameAdmin1', false, callback);
+	}
 ]);
 

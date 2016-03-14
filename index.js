@@ -7,8 +7,8 @@ exports.mysqlInitDB = function(cfg, build, cb) {
   	mysqlInitDB.initDatabases(cfg, build, cb);
 }
 
-exports.mysqlInitSH = function(cfg, schemas, append, cb) {
-  	//mysqlInitSH.loadData(cfg, schemas, append, cb);
+exports.mysqlLoadDB = function(cfg, schemas, append, cb) {
+  	mysqlLoadDB.loadData(cfg, schemas, append, cb);
 }
 
 var oracleInitDB = require('./oracle/init_database');

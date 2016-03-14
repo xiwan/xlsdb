@@ -70,6 +70,11 @@ there are serveral public methods available for quick usage:
 	// param1 : the path to conf
 	// param2 : rebuild db flag, default is false;
 	xlsdb.mysqlInitDB(param1, param2, callback);
+
+	// param1 : the path to conf
+	// param2 : string of target dbs, like: 'db1,db2,db3'
+	// param3 : append flag, default is false;
+	xlsdb.mysqlLoadDB(param1, param2, param3, cb);
 	
 	// param1 : the path to conf
 	// param2 : rebuild db flag, default is false;
@@ -78,7 +83,7 @@ there are serveral public methods available for quick usage:
 	// param1 : the path to conf
 	// param2 : string of target dbs, like: 'db1,db2,db3'
 	// param3 : append flag, default is false;
-	xlsdb.oracleLoadDB.loadData(param1, param2, param3, cb);
+	xlsdb.oracleLoadDB(param1, param2, param3, cb);
 
 ## Command-Line (Obsolete)
 
