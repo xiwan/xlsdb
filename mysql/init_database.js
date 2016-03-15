@@ -12,7 +12,7 @@ var config = {};
 var schemas = {};
 
 exports.initDatabases = function(cfg, build, cb){
-    build = build || true;
+    build = build && true;
     config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
     if (!config.mysql) {
         console.warn('no configuration!');

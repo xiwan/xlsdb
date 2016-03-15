@@ -10,7 +10,7 @@ var __ 			= require('lodash');
 
 var config = {};
 exports.initDatabases = function(cfg, build, cb){
-    build = build || true;
+    build = build && true;
 	config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
 	if (!config.oracle) {
 		console.warn('no configuration!');
