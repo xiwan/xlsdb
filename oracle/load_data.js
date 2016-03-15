@@ -14,6 +14,8 @@ var config =  {};
 exports.loadData = function(cfg, schemas, append, cb){
     append = append && true;
     config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
+    config.db = 'oracle';
+    
     if (!config.oracle) {
         console.warn('no configuration!');
         cb(new Error('no configuration!'));  
@@ -61,7 +63,7 @@ function loadJson2DB(tables, schema, append, callback) {
 			}
             var tempInsertQry = [];
             tempInsertQry.push('INSERT ALL');
-            var outs = share.utils.colsAndRows(schema, sheet, tables[sheet], 'oracle');
+            var outs = share.utils.colsAndRows(schema, sheet, tables[sheet], config.db);
             for (var i in outs) {
                 tempInsertQry.push(util.format("INTO %s.%s ( %s ) VALUES ( %s )", schema, sheet, outs[i].cols.join(', '), outs[i].rows.join(', ')));       
             }
