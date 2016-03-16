@@ -2,11 +2,23 @@
 
 var fs 			= require('fs');
 var util       	= require('util');
-var oracledb    = require('oracledb');
 var xlsx       	= require('xlsx');
 var async      	= require('async');
 var ini 		= require('ini');
 var __ 			= require('lodash');
+
+var oracledb = null;
+var oracledbVersion = 0;
+try {
+    oracledb = require('oracledb');
+    oracledbVersion = require('oracledb/package.json').version
+} catch (ex) {
+    oracledb = null;
+}
+if (!oracledb) {
+    throw new Error('Please install oracledb first');
+    return;
+}
 
 var config = {};
 exports.initDatabases = function(cfg, build, cb){
@@ -31,6 +43,7 @@ exports.initDatabases = function(cfg, build, cb){
 			build ? async.eachSeries(schemas.Database, createDatabase, callback) : callback();
 		},
 		function(callback) {
+            console.log('start schema ...');
 			async.eachSeries(schemas.Database, createSchema, callback);
 		}
 	],
