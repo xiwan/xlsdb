@@ -1,11 +1,5 @@
 'use strict'
-var __          = require('lodash');
-
-// var mysqlInitDB = require('./mysql/init_database');
-// var mysqlLoadDB = require('./mysql/load_data');
-// var oracleInitDB = require('./oracle/init_database');
-// var oracleLoadDB = require('./oracle/load_data');
-
+var __ = require('lodash');
 /*
 var config = {
 	path : '/path/to/config.ini',
@@ -18,8 +12,9 @@ var config = {
 
 function xlsdb(config) {
 	this.config = config;
-	this.mysql = {};
-	this.oracle = {};
+	this.dbOpts = ['mysql', 'oracle'];
+	this.initHandler = null;
+	this.loadHandler = null;
 
 	if (!__.isBoolean(this.config.build)){
 		this.config.build = true;
@@ -31,19 +26,29 @@ function xlsdb(config) {
 		throw new Error('no schemas set');
 	}
 
-	if (!this.config.db || __.indexOf(['mysql', 'oracle'], this.config.db) == -1 ) {
+	if (!this.config.db || __.indexOf(this.dbOpts, this.config.db) == -1 ) {
 		console.warn('since no db set, use mysql as default.');
 		this.config.db = 'mysql';
 	}
-	if (this.config.db == 'mysql') {
+	if (this.config.db == this.dbOpts[0]) {
 		_packageTest ('mysql');
-		this.mysql.initDB = require('./mysql/init_database');
-		this.mysql.loadDB = require('./mysql/load_data');
+
+		var mysql = {};
+		mysql.initDB = require('./mysql/init_database');
+		mysql.loadDB = require('./mysql/load_data');
+
+		this.initHandler = mysql.initDB.initDatabases;
+		this.loadHandler = mysql.loadDB.loadData;
 	}
-	if (this.config.db == 'oracle') {
+	if (this.config.db == this.dbOpts[1]) {
 		_packageTest ('oracledb');
-		this.oracle.initDB = require('./oracle/init_database');
-		this.oracle.loadDB = require('./oracle/load_data');
+
+		var oracle = {};
+		oracle.initDB = require('./oracle/init_database');
+		oracle.loadDB = require('./oracle/load_data');
+
+		this.initHandler = oracle.initDB.initDatabases;
+		this.loadHandler = oracle.loadDB.loadData;
 	}
 
 	return this;
@@ -52,23 +57,11 @@ function xlsdb(config) {
 xlsdb.prototype.constructor = xlsdb;
 
 xlsdb.prototype.init = function(cb){
-	var config = this.config;
-	if(config.db == 'mysql') {
-		return this.mysql.initDB.initDatabases(config.path, config.build, cb);
-	}
-	if(config.db == 'oracle') {
-		return this.oracle.initDB.initDatabases(config.path, config.build, cb);
-	}	
+	this.initHandler(this.config.path, this.config.build, cb);
 };
 
 xlsdb.prototype.load = function(cb){
-	var config = this.config;
-	if(config.db == 'mysql') {
-		return this.mysql.loadDB.loadData(config.path, config.schemas, config.append, cb);
-	}
-	if(config.db == 'oracle') {
-		return this.oracle.loadDB.loadData(config.path, config.schemas, config.append, cb);
-	}
+	this.loadHandler(this.config.path, this.config.schemas, this.config.append, cb);
 };
 
 function _packageTest(name) {
