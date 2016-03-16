@@ -27,7 +27,7 @@ Since the Linux OS doesn't have similar tool to pdm in Windows, most of time, th
 
 	npm install xlsdb
 
-Or
+Or just download it from:
 
 	https://github.com/xiwan/xlsdb.git
 
@@ -55,49 +55,41 @@ The very first thing usually is build a configuration file, for example:
 	[xlsx]
 	fileDir = /path/to/xls/data/directory/
 
+
+create a config object:
+	
+	var config = {
+		path : '/path/to/config.ini',
+		db : 'mysql', 				// default is 'mysql', another value is 'oracle',
+		schemas : 'gameAdmin1', 	// if multi schemas, like 'db1,db2'
+		build : true, 				// build flag, boolean, default is 'true'
+		append : false 				// append flag, boolean, default is 'false'
+	}
+
 To import the package:
 
 	var xlsdb = require('xlsdb');
 
+create new xlsdb instance passing config object:
 
-Specify the path to our config.ini:
+	var _xlsdb = xlsdb.create(config);
+		
+there are two public methods available for quick usage:
 
-	var cfgPath = '/path/to/config.ini';
-
+	init(cb) // init database 
 	
-there are serveral public methods available for quick usage:
-
-	// param1 : the path to conf
-	// param2 : rebuild db flag, default is false;
-	xlsdb.mysqlInitDB(param1, param2, callback);
-
-	// param1 : the path to conf
-	// param2 : string of target dbs, like: 'db1,db2,db3'
-	// param3 : append flag, default is false;
-	xlsdb.mysqlLoadDB(param1, param2, param3, cb);
-	
-	// param1 : the path to conf
-	// param2 : rebuild db flag, default is false;
-	xlsdb.oracleInitDB(param1, param2, callback);
-
-	// param1 : the path to conf
-	// param2 : string of target dbs, like: 'db1,db2,db3'
-	// param3 : append flag, default is false;
-	xlsdb.oracleLoadDB(param1, param2, param3, cb);
-
-## Command-Line (Obsolete)
-
-	# mysql init
-	node mysql/init_database.js  --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini 
+	load(cb) // load data to db
 
 
-Default init behavior is rebuild db. If there is a **build** argument, the modification will occur on present db. 
+For more detail, please check the test folder :)
 
-每次默认是重新建立数据库的。如果有build参数，则不会重新生成数据库。
 
-	# oracle init
-	node oracle/init_database.js  --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini --build=false
+## Dependency
 
-	# oracle insert
-	node oracle/insert_data.js --cfg=/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini --schema=gameAdmin1
-	
+    "async": "1.x",
+    "lodash": "~3.10.1",
+    "mysql": "~2.7.0",
+    "optimist": "~0.6.0",
+    "xlsx": "~0.3.3",
+    "oracledb": "~1.6.0",
+    "ini": "~1.1.0"
