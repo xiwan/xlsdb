@@ -3,14 +3,22 @@
 var xlsdb = require('../index');
 var async = require('async');
 
-var cfgPath = '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini';
+var config = {
+	path : '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini',
+	db : 'mysql',
+	schemas : 'gameAdmin1',
+	build : true,
+	append : false
+}
+
+var _xlsdb = xlsdb.create(config);
 
 async.series([
 	function(callback) {
-		xlsdb.mysqlInitDB(cfgPath, true, callback);
+		_xlsdb.init(callback);
 	},
 	function(callback) {
-		xlsdb.mysqlLoadDB(cfgPath,'gameAdmin1', false, callback);
+		_xlsdb.load(callback);
 	}
 ]);
 
