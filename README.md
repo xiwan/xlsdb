@@ -4,7 +4,7 @@
 
 1. This is a nodejs project, make sure you are comfortable with it.
 2. Since **xlsdb** can communicate with both mysql and oracle. The dependency is required beafore everything, especailly for [oracle](https://github.com/oracle/node-oracledb/blob/master/INSTALL.md). 
-3. This project now still in phase of active coding upload. Please be aware of this point.
+3. This project now is stable.
 
 ## Brief
 
@@ -36,6 +36,8 @@ Or just download it from:
 
 The very first thing usually is build a configuration file, for example:
 
+首先你需要建立一个配置文件config.ini，如下：
+
 	// config.ini
 	; mysql related configuration
 	[mysql]
@@ -55,8 +57,13 @@ The very first thing usually is build a configuration file, for example:
 	[xlsx]
 	fileDir = /path/to/xls/data/directory/
 
+To import the package:
 
-create a config object:
+	var xlsdb = require('xlsdb');
+
+next, create a config object:
+
+接着，在代码中创建一个config对象:
 	
 	var config = {
 		path : '/path/to/config.ini',
@@ -66,11 +73,10 @@ create a config object:
 		append : false 				// append flag, boolean, default is 'false'
 	}
 
-To import the package:
 
-	var xlsdb = require('xlsdb');
+create new xlsdb instance passing config object as parameter:
 
-create new xlsdb instance passing config object:
+创建一个xlsdb实例，传入config对象
 
 	var _xlsdb = xlsdb.create(config);
 		
