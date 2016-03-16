@@ -1,12 +1,12 @@
 'use strict'
 
-var fs 			= require('fs');
-var util       	= require('util');
-var mysql      	= require('mysql');
-var xlsx       	= require('xlsx');
-var async      	= require('async');
-var ini 		= require('ini');
-var __ 			= require('lodash');
+var fs          = require('fs');
+var util        = require('util');
+var xlsx        = require('xlsx');
+var async       = require('async');
+var ini         = require('ini');
+var __          = require('lodash');
+var mysql       = require('mysql');
 var share       = require('../bin/share');
 
 var config =  {};

@@ -10,11 +10,12 @@
   "dependencies": {
     "async": "1.x",
     "lodash": "~3.10.1",
-    "mysql": "~2.7.0",
-    "optimist": "~0.6.0",
     "xlsx": "~0.3.3",
-    "oracledb": "~1.6.0",
     "ini": "~1.1.0"
+  },
+  "optionalDependencies": {
+    "mysql": "~2.7.0",
+    "oracledb": "~1.6.0"
   },
   "description": "fast way to manage db by xls.",
   "bugs": {

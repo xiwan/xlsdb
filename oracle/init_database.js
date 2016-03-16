@@ -6,19 +6,7 @@ var xlsx       	= require('xlsx');
 var async      	= require('async');
 var ini 		= require('ini');
 var __ 			= require('lodash');
-
-var oracledb = null;
-var oracledbVersion = 0;
-try {
-    oracledb = require('oracledb');
-    oracledbVersion = require('oracledb/package.json').version
-} catch (ex) {
-    oracledb = null;
-}
-if (!oracledb) {
-    throw new Error('Please install oracledb first');
-    return;
-}
+var oracledb    = require('oracledb');
 
 var config = {};
 exports.initDatabases = function(cfg, build, cb){
@@ -124,7 +112,7 @@ function createSchema(schema, cb) {
                 async.mapSeries(iData, function(data, cb) { 
                     initTable(connection, data, cb) 
                 }, function(err){
-                    console.warn('initSchema. name:%s', schema.Name);
+                    console.warn('createSchema. name:%s', schema.Name);
                     connection.release(cb);
                 });
 
@@ -170,7 +158,6 @@ function initTable(connection, data, cb) {
         }else {
         	var qryList = getAlterQry(data.schema, data.iRef, data.iList[name.toUpperCase()], data.tables[name]);
         	async.mapSeries(qryList, function(qry ,callback){
-        		//console.log(qry)
                 console.log('alert table %s.%s', data.schema, name);
         		connection.execute(qry, callback);
         	}, function(err){

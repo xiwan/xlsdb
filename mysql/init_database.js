@@ -1,15 +1,14 @@
 'use strict'
 
-var mysql      	= require('mysql');
-var util       	= require('util');
-var xlsx       	= require('xlsx');
-var async      	= require('async');
-var ini 		= require('ini');
-var fs 			= require('fs');
+var util        = require('util');
+var xlsx        = require('xlsx');
+var async       = require('async');
+var ini         = require('ini');
+var fs          = require('fs');
 var __          = require('lodash');
+var mysql       = require('mysql');
 
 var config = {};
-var schemas = {};
 
 exports.initDatabases = function(cfg, build, cb){
     build = build && true;
@@ -20,6 +19,7 @@ exports.initDatabases = function(cfg, build, cb){
         return; 
     }
     var iFile = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
+    var schemas = {};
     iFile.SheetNames.forEach(function(name) {
         var sheet = iFile.Sheets[name];
         schemas[name] = xlsx.utils.sheet_to_row_object_array(sheet);
@@ -121,7 +121,7 @@ function createSchema(schema, cb) {
             async.mapSeries(iData, function(data, cb) { 
                 initTable(connection, data, cb) 
             }, function(err) {
-                console.warn('initSchema. name:%s', schema.Name);
+                console.warn('createSchema. name:%s', schema.Name);
                 if (err) {
                     cb(err);
                     connection.end();
