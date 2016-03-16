@@ -32,11 +32,11 @@ Or just download it from:
 	https://github.com/xiwan/xlsdb.git
 
 	
-## How to use
+## How to use it
 
-The very first thing usually is build a configuration file, for example:
+The very first thing usually is build a configuration file. Usually, this file is for globally config. for example:
 
-首先你需要建立一个配置文件config.ini，如下：
+首先你需要建立一个配置文件config.ini，通常这个是全局的一个配置。如下：
 
 	// config.ini
 	; mysql related configuration
@@ -44,26 +44,23 @@ The very first thing usually is build a configuration file, for example:
 	host = localhost:3306
 	user = root
 	password = somepassword
-	baseDir = /base/path/point/to/mysql/dir/
 
 	; oracle related configuration
 	[oracle]
 	connectString = localhost:1521/orcl
 	user = root
 	password = somepassword
-	baseDir = /base/path/point/to/oracle/dir/
 
 	; xls files path
 	[xlsx]
-	fileDir = /path/to/xls/data/directory/
+	dataDir = /path/to/xls/data/directory/
+	mysqlDir = /base/path/point/to/mysql/dir/
+	oracleDir = /base/path/point/to/oracle/dir/
 
-To import the package:
 
-	var xlsdb = require('xlsdb');
+next, create a config object. note: this config object will be extended with config.ini, so don't make any conflict name.
 
-next, create a config object:
-
-接着，在代码中创建一个config对象:
+接着，在代码中创建一个config对象。注意：这个对象的key的名字不要和config.ini文件中的冲突。
 	
 	var config = {
 		path : '/path/to/config.ini',
@@ -72,12 +69,41 @@ next, create a config object:
 		build : true, 				// build flag, boolean, default is 'true'
 		append : false 				// append flag, boolean, default is 'false'
 	}
+	
+Let's check the final config object, if you just console it out:
 
+	{ 
+		path: '/path/to/config.ini',
+  		db: 'oracle',
+  		sysConn: 'systems.xlsx',
+  		schemas: 'gameAdmin1',
+  		build: true,
+  		append: false,
+  		mysql: 
+   		{ 
+   			host: 'localhost',
+     		port: '3306',
+     		user: 'root',
+     		password: 'somepassword'
+     	},
+  		oracle: 
+   		{ 
+   			connectString: 'localhost:1521/orcl',
+     		user: 'root',
+     		password: 'somepassword'
+     	},
+  		xlsx: { 
+  			dataDir: '/path/to/xls/data/directory/',
+  			mysqlDir: '/base/path/point/to/mysql/dir/',
+  			oracleDir: '/base/path/point/to/oracle/dir/' 
+  		} 
+  	}
 
 create new xlsdb instance passing config object as parameter:
 
 创建一个xlsdb实例，传入config对象
 
+	var xlsdb = require('xlsdb');
 	var _xlsdb = xlsdb.create(config);
 		
 there are two public methods available for quick usage:

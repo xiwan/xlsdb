@@ -1,35 +1,17 @@
 'use strict'
 
-var fs 			= require('fs');
 var util       	= require('util');
 var xlsx       	= require('xlsx');
 var async      	= require('async');
-var ini 		= require('ini');
 var __ 			= require('lodash');
 var oracledb    = require('oracledb');
 var share       = require('../bin/share');
 
-var config =  {};
-
-exports.loadData = function(cfg, schemas, append, cb){
-    append = append && true;
-    config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
-    config.db = 'oracle';
-    
-    if (!config.oracle) {
-        console.warn('no configuration!');
-        cb(new Error('no configuration!'));  
-    }
-
-    if (!schemas) {
-        console.warn('no schemas!');
-        cb(new Error('no schemas!'));   
-    }
-
-    async.eachSeries(schemas.split(','), function(schema, callback){
-        var filePath = config.xlsx.fileDir + '/' + schema + '.xlsx';
-        var tables = share.utils.loadExcel2Json(config.xlsx.fileDir + '/' + schema + '.xlsx', []);
-        loadJson2DB(tables, schema, append, callback);
+exports.loadData = function(cb){
+    var self = this;
+    async.eachSeries(self.config.schemas.split(','), function(schema, callback){
+        var tables = share.utils.loadExcel2Json(self.config.xlsx.dataDir + '/' + schema + '.xlsx', []);
+        loadJson2DB(self.config, tables, schema, callback);
     }, function(err){
         if (err) console.error(err.message);
         console.log('done!');
@@ -39,7 +21,7 @@ exports.loadData = function(cfg, schemas, append, cb){
 }
 
 
-function loadJson2DB(tables, schema, append, callback) {
+function loadJson2DB(config, tables, schema, callback) {
 	if (!tables) {
 		callback(new Error(schema + ': no such file or directory'));
 		return;
@@ -58,7 +40,7 @@ function loadJson2DB(tables, schema, append, callback) {
 		var insertQry = [];
         var SheetNames = __.keys(tables);
 		SheetNames.forEach(function(sheet){
-			if (!append){
+			if (!config.append){
 				insertQry.push(util.format("TRUNCATE TABLE %s.%s", schema, sheet));
 			}
             var tempInsertQry = [];

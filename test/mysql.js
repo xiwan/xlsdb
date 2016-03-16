@@ -6,6 +6,7 @@ var async = require('async');
 var config = {
 	path : '/Users/wanxi/Documents/dev/xlsdb/cfg/config.ini',
 	db : 'mysql',
+	sysConn : 'systems.xlsx',
 	schemas : 'gameAdmin1',
 	build : true,
 	append : false

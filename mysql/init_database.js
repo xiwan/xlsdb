@@ -3,22 +3,17 @@
 var util        = require('util');
 var xlsx        = require('xlsx');
 var async       = require('async');
-var ini         = require('ini');
-var fs          = require('fs');
 var __          = require('lodash');
 var mysql       = require('mysql');
 
-var config = {};
-
-exports.initDatabases = function(cfg, build, cb){
-    build = build && true;
-    config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
-    if (!config.mysql) {
+exports.initDatabases = function(cb){
+    var self = this;
+    if (!self.config.mysql) {
         console.warn('no configuration!');
         cb(new Error('no configuration!')); 
         return; 
     }
-    var iFile = xlsx.readFile(config.mysql.baseDir + '/systems.xlsx');
+    var iFile = xlsx.readFile(self.config.xlsx.mysqlDir + '/' + self.config.sysConn);
     var schemas = {};
     iFile.SheetNames.forEach(function(name) {
         var sheet = iFile.Sheets[name];
@@ -28,13 +23,16 @@ exports.initDatabases = function(cfg, build, cb){
     async.series([
         function(callback) {
             console.log('start database ...');
-            build ? async.eachSeries(schemas.Database, createDatabase, callback) : callback();
+            self.config.build ? async.eachSeries(schemas.Database, function(schema, cbk){
+                createDatabase(self.config, schema, cbk);
+            }, callback) : callback();
         },
         function(callback) {
             console.log('start schema ...');
-            async.eachSeries(schemas.Database, createSchema, callback);
+            async.eachSeries(schemas.Database, function(schema, cbk){
+                createSchema(self.config, schema, cbk);
+            }, callback);
         }
-
     ], function(err, results){
         err && console.warn(err.message);
         console.log('done!');
@@ -43,7 +41,7 @@ exports.initDatabases = function(cfg, build, cb){
 
 }
 
-function createDatabase(schema, cb) {
+function createDatabase(config, schema, cb) {
     var connection = mysql.createConnection({
         host     : config.mysql.host || schema.Host,
         user     : config.mysql.user,
@@ -63,7 +61,7 @@ function createDatabase(schema, cb) {
                     throw err;
                 }
                 connection.end();
-                createDatabase(schema, cb);
+                createDatabase(config, schema, cb);
             });
             return;
         }else if (err && err.code !== 'ER_DB_CREATE_EXISTS') {
@@ -80,7 +78,7 @@ function createDatabase(schema, cb) {
     });
 }
 
-function createSchema(schema, cb) {
+function createSchema(config, schema, cb) {
     try {
         var connection = mysql.createConnection({
             host     : schema.Host,
@@ -89,7 +87,7 @@ function createSchema(schema, cb) {
             database : schema.Name
         });
 
-        var name = util.format(config.mysql.baseDir + '/%s.xlsx', schema.Name);
+        var name = util.format(config.xlsx.mysqlDir + '/%s.xlsx', schema.Name);
         var iFile = xlsx.readFile(name);
         var tables = {};
         iFile.SheetNames.forEach(function(name) {

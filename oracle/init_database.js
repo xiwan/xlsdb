@@ -1,24 +1,20 @@
 'use strict'
 
-var fs 			= require('fs');
 var util       	= require('util');
 var xlsx       	= require('xlsx');
 var async      	= require('async');
-var ini 		= require('ini');
 var __ 			= require('lodash');
 var oracledb    = require('oracledb');
 
-var config = {};
-exports.initDatabases = function(cfg, build, cb){
-    build = build && true;
-	config = ini.parse(fs.readFileSync(cfg, 'utf-8'));
-	if (!config.oracle) {
+exports.initDatabases = function(cb){
+    var self = this;
+	if (!self.config.oracle) {
 		console.warn('no configuration!');
 		cb(new Error('no configuration!')); 
         return; 
 	}
 
-	var iFile = xlsx.readFile(config.oracle.baseDir + '/systems.xlsx');
+	var iFile = xlsx.readFile(self.config.xlsx.oracleDir + '/' + self.config.sysConn);
 	var schemas = {};
 	iFile.SheetNames.forEach(function(name) {
 	    var sheet = iFile.Sheets[name];
@@ -28,11 +24,15 @@ exports.initDatabases = function(cfg, build, cb){
 	async.series([
 		function(callback) {
             console.log('start database ...');
-			build ? async.eachSeries(schemas.Database, createDatabase, callback) : callback();
+			self.config.build ? async.eachSeries(schemas.Database, function(schema, cbk){
+                createDatabase(self.config, schema, cbk);
+            }, callback) : callback();
 		},
 		function(callback) {
             console.log('start schema ...');
-			async.eachSeries(schemas.Database, createSchema, callback);
+			async.eachSeries(schemas.Database, function(schema, cbk){
+                createSchema(self.config, schema, cbk);
+            }, callback);
 		}
 	],
 	function(err, results){
@@ -43,7 +43,7 @@ exports.initDatabases = function(cfg, build, cb){
 
 };
 
-function createDatabase(schema, cb){
+function createDatabase(config, schema, cb){
 	oracledb.getConnection({
 		user : config.oracle.user,
 		password : config.oracle.password,
@@ -67,7 +67,7 @@ function createDatabase(schema, cb){
 	});
 };
 
-function createSchema(schema, cb) {
+function createSchema(config, schema, cb) {
     console.log('start schema ...');
     try {
         oracledb.getConnection({
@@ -82,7 +82,7 @@ function createSchema(schema, cb) {
             }
 
             var comments = [];
-            var name = util.format(config.oracle.baseDir + '/%s.xlsx', schema.Name);
+            var name = util.format(config.xlsx.oracleDir + '/%s.xlsx', schema.Name);
             var iFile = xlsx.readFile(name);
             var tables = {};
             iFile.SheetNames.forEach(function(name) {
