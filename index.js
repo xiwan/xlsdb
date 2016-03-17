@@ -2,15 +2,6 @@
 var __ 			= require('lodash');
 var ini 		= require('ini');
 var fs 			= require('fs');
-/*
-var config = {
-	path : '/path/to/config.ini',
-	db : 'mysql',
-	schemas : 'gameAdmin1',
-	build : true,
-	append : false
-}
-*/
 
 function xlsdb(config) {
 	if (!config.path || !config.schemas) {
@@ -71,6 +62,10 @@ function xlsdb(config) {
 }
 
 xlsdb.prototype.constructor = xlsdb;
+
+xlsdb.prototype.getConfig = function(){
+	return this.config;
+}
 
 xlsdb.prototype.init = function(cb){
 	this.initHandler.apply(this, arguments);

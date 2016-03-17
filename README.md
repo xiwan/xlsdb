@@ -108,6 +108,8 @@ create new xlsdb instance passing config object as parameter:
 		
 there are two public methods available for quick usage:
 
+	getConfig() // get the current config object
+
 	init(cb) // init database 
 	
 	load(cb) // load data to db
