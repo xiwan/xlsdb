@@ -31,7 +31,59 @@ Or just download it from:
 
 	https://github.com/xiwan/xlsdb.git
 
-	
+## How to xls
+
+
+### build database
+
+首先我们需要创建对于不同db的数据库连接文件，一般命名为systems.xlsx
+
+* Name : 数据库的名称，由于oracle的特殊性，一般这个字段和后面User字段一样。不过mysql不必遵守这个要求。
+* Host : 数据库服务器地址
+* User : 对应数据库访问的用户名
+* Password : 对应用户名的密码
+* LogDB : 无用
+* Description : 数据库描述
+
+![systems](https://cloud.githubusercontent.com/assets/931632/13909143/c25568b4-ef49-11e5-9b8a-dfaad114dcff.png)
+
+### build tables
+
+接下来可以分别创建systems表格里面说明的数据库，比如gameAdmin1.xlsx。它的结构基本是固定的：第一个签页为Domain，描述了整个数据库。后面就是一张张表格的具体描述。
+
+![Domain](https://cloud.githubusercontent.com/assets/931632/13909636/9cc91ade-ef51-11e5-8b82-bdbb57be8f9c.png)
+
+Domain签页主要是对于整个数据库的描述。需要关注的几个是前面几个字段
+
+* Domain : 用来表征Table的集合，一对多的关系。
+* Name : 名字
+* TableName : 表格名字
+* Hierachy : 无用，可以空。
+* Partition* : 可以为空
+* Description : 表格描述
+
+下面我们看下任意一个签页的结构
+![Tab](https://cloud.githubusercontent.com/assets/931632/13909687/84b9dee6-ef52-11e5-9e84-ca080612d88f.png)
+
+* Name: 字段名称
+* DataType: 数据类型，oracle与mysql不同的地方就是数据库支持的DataType不同
+* isNull: 是否为空
+* isKey: 是否为主键，可以多个key.
+* Default: 默认值
+* Description : 字段描述
+
+### xls data
+
+如何通过xls来加载数据呢？我们需要建立一个gameAdmin1.xlsx的文件（与上面的文件放在不同目录），里面的结构如下：
+
+![xls data](https://cloud.githubusercontent.com/assets/931632/13909765/e9949440-ef53-11e5-8ed6-21edd9c5f1b5.png)
+
+* 第一行是对于每列的描述
+* 第二行是数据类型，支持string, int ,long, byte, float和date
+* 第三行是列名字，相当于表中的字段名字，需要一一对应。
+* 从第四行开始就是具体的数据了。
+* 最后一行用EOF表示数据的结尾。
+
 ## How to use it
 
 The very first thing usually is build a configuration file. Usually, this file is for globally config. for example:
