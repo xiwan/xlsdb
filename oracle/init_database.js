@@ -68,7 +68,6 @@ function createDatabase(config, schema, cb){
 };
 
 function createSchema(config, schema, cb) {
-    console.log('start schema ...');
     try {
         oracledb.getConnection({
             user : schema.User,
@@ -81,7 +80,6 @@ function createSchema(config, schema, cb) {
                 return; 
             }
 
-            var comments = [];
             var name = util.format(config.xlsx.oracleDir + '/%s.xlsx', schema.Name);
             var iFile = xlsx.readFile(name);
             var tables = {};
@@ -133,6 +131,7 @@ function initTable(connection, data, cb) {
             cb(null);
             return;
         }
+        data.workList.push(name);
         if (!data.iList[name.toUpperCase()]) {
         	async.series([
         		function(callback){
@@ -157,6 +156,10 @@ function initTable(connection, data, cb) {
         	});
         }else {
         	var qryList = getAlterQry(data.schema, data.iRef, data.iList[name.toUpperCase()], data.tables[name]);
+            if (qryList.length == 0) {
+                cb(null);
+                return;
+            }
         	async.mapSeries(qryList, function(qry ,callback){
                 console.log('alert table %s.%s', data.schema, name);
         		connection.execute(qry, callback);
